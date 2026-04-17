@@ -1,11 +1,15 @@
 import streamlit as st
 import pickle
 import numpy as np
+import os
+
+# Get the directory of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Load pickle files
-model = pickle.load(open("model.pkl", "rb"))
-minmax = pickle.load(open("minmaxscaler.pkl", "rb"))
-standard = pickle.load(open("standscaler.pkl", "rb"))
+model = pickle.load(open(os.path.join(script_dir, "model.pkl"), "rb"))
+minmax = pickle.load(open(os.path.join(script_dir, "minmaxscaler.pkl"), "rb"))
+standard = pickle.load(open(os.path.join(script_dir, "standscaler.pkl"), "rb"))
 
 # Crop label mapping
 crop_dict = {

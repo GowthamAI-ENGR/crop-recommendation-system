@@ -1,11 +1,15 @@
 import streamlit as st
 import numpy as np
 import pickle
+import os
+
+# Get the directory of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Load the model and scalers
-model = pickle.load(open('model.pkl', 'rb'))
-sc = pickle.load(open('standscaler.pkl', 'rb'))
-mx = pickle.load(open('minmaxscaler.pkl', 'rb'))
+model = pickle.load(open(os.path.join(script_dir, 'model.pkl'), 'rb'))
+sc = pickle.load(open(os.path.join(script_dir, 'standscaler.pkl'), 'rb'))
+mx = pickle.load(open(os.path.join(script_dir, 'minmaxscaler.pkl'), 'rb'))
 
 # Crop dictionary
 crop_dict = {1: "Rice", 2: "Maize", 3: "Jute", 4: "Cotton", 5: "Coconut", 6: "Papaya", 7: "Orange",
