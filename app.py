@@ -1,68 +1,58 @@
 import streamlit as st
-import pickle
 import numpy as np
+import pickle
 import os
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Load pickle files
-model = pickle.load(open(os.path.join(script_dir, "model.pkl"), "rb"))
-minmax = pickle.load(open(os.path.join(script_dir, "minmaxscaler.pkl"), "rb"))
-standard = pickle.load(open(os.path.join(script_dir, "standscaler.pkl"), "rb"))
+# Load the model and scalers
+model = pickle.load(open(os.path.join(script_dir, 'model.pkl'), 'rb'))
+sc = pickle.load(open(os.path.join(script_dir, 'standscaler.pkl'), 'rb'))
+mx = pickle.load(open(os.path.join(script_dir, 'minmaxscaler.pkl'), 'rb'))
 
-# Crop label mapping
-crop_dict = {
-    0: "apple",
-    1: "banana",
-    2: "blackgram",
-    3: "chickpea",
-    4: "coconut",
-    5: "coffee",
-    6: "cotton",
-    7: "grapes",
-    8: "jute",
-    9: "kidneybeans",
-    10: "lentil",
-    11: "maize",
-    12: "mango",
-    13: "mothbeans",
-    14: "mungbean",
-    15: "muskmelon",
-    16: "orange",
-    17: "papaya",
-    18: "pigeonpeas",
-    19: "pomegranate",
-    20: "rice",
-    21: "watermelon"
-}
+# Crop dictionary
+crop_dict = {1: "Rice", 2: "Maize", 3: "Jute", 4: "Cotton", 5: "Coconut", 6: "Papaya", 7: "Orange",
+             8: "Apple", 9: "Muskmelon", 10: "Watermelon", 11: "Grapes", 12: "Mango", 13: "Banana",
+             14: "Pomegranate", 15: "Lentil", 16: "Blackgram", 17: "Mungbean", 18: "Mothbeans",
+             19: "Pigeonpeas", 20: "Kidneybeans", 21: "Chickpea", 22: "Coffee"}
 
-# Page settings
-st.set_page_config(page_title="Crop Recommendation System", layout="centered")
+st.title("Crop Recommendation System 🌱")
 
-st.title("🌱 Crop Recommendation System")
-st.write("Enter soil and weather details to get the recommended crop")
+st.markdown("Enter the soil and environmental parameters to get the best crop recommendation.")
 
 # Input fields
-N = st.number_input("Nitrogen (N)", min_value=0.0)
-P = st.number_input("Phosphorus (P)", min_value=0.0)
-K = st.number_input("Potassium (K)", min_value=0.0)
-temperature = st.number_input("Temperature (°C)")
-humidity = st.number_input("Humidity (%)")
-ph = st.number_input("pH Value")
-rainfall = st.number_input("Rainfall (mm)")
+col1, col2, col3 = st.columns(3)
+with col1:
+    N = st.number_input("Nitrogen", min_value=0.0, step=0.1)
+with col2:
+    P = st.number_input("Phosphorus", min_value=0.0, step=0.1)
+with col3:
+    K = st.number_input("Potassium", min_value=0.0, step=0.1)
 
-if st.button("Recommend Crop"):
-    input_data = np.array([[N, P, K, temperature, humidity, ph, rainfall]])
+col4, col5, col6 = st.columns(3)
+with col4:
+    temp = st.number_input("Temperature (°C)", step=0.01)
+with col5:
+    humidity = st.number_input("Humidity (%)", step=0.01)
+with col6:
+    ph = st.number_input("pH", step=0.01)
 
-    # Apply scaling
-    data_minmax = minmax.transform(input_data)
-    final_data = standard.transform(data_minmax)
+rainfall = st.number_input("Rainfall (mm)", step=0.01)
 
-    # Prediction
-    prediction = model.predict(final_data)[0]
+if st.button("Get Recommendation"):
+    # Prepare features
+    feature_list = [N, P, K, temp, humidity, ph, rainfall]
+    single_pred = np.array(feature_list).reshape(1, -1)
 
-    # Convert number to crop name
-    crop_name = crop_dict.get(prediction, "Unknown Crop")
+    # Transform
+    mx_features = mx.transform(single_pred)
+    sc_mx_features = sc.transform(mx_features)
+    prediction = model.predict(sc_mx_features)
 
-    st.success(f"🌾 Recommended Crop: {crop_name}")
+    # Get crop
+    if prediction[0] in crop_dict:
+        crop = crop_dict[prediction[0]]
+        st.success(f"{crop} is the best crop to be cultivated right there!")
+    else:
+        st.error("Sorry, we could not determine the best crop to be cultivated with the provided data.")
